@@ -1,22 +1,34 @@
 "use client"
 
-import { useNoteStore } from "../store/useNoteStore";
+import { createClient } from "@/lib/supabase/client";
+import { useNoteStore, Note } from "../store/useNoteStore";
+
+async function saveNote(newNote: Note) {
+  const supabase = await createClient()
+  const { error } = await supabase.from("Notes").insert(newNote)
+
+  if (error) console.error(error);
+
+}
 
 export function AddItemBox() {
   const addNote = useNoteStore(n => n.addNote)
 
   const addNewNote = () => {
-    addNote({
+    const newNote: Note = {
       id: crypto.randomUUID(),
       x: 50, y: 50,
       width: 150, height: 150,
       text: "new note"
-    })
+    }
+    addNote(newNote)
+    saveNote(newNote)
   }
+
   return (
     <button
       onClick={() => addNewNote()}
-      className="flex flex-col items-center justify-center min-h-50 w-full rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/10 p-6 text-muted-foreground transition-all hover:border-foreground hover:bg-muted/20 hover:text-foreground group"
+      className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/10  text-muted-foreground transition-all hover:border-foreground hover:bg-muted/20 hover:text-foreground group cursor-pointer"
     >
       <div>
         <svg

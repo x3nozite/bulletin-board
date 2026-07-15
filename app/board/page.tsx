@@ -9,11 +9,11 @@ type Props = {
 export default function page({ }: Props) {
   return (
     <>
-      <div>Testing</div>
-      <AddItemBox></AddItemBox>
+      <div className="border-2 border-solid border-gray-500 flex justify-center w-fit p-4 fixed mx-auto top-4 inset-x-0 z-10">
+        <AddItemBox></AddItemBox>
+      </div>
 
-      <div>
-        where
+      <div className="bg-white">
         <Canvas></Canvas>
       </div>
 

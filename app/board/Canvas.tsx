@@ -9,6 +9,11 @@ async function NotesData() {
   const supabase = await createClient();
   const { data: notes } = await supabase.from("Notes").select("id, x, y, width, height, text")
 
+  if (!notes) {
+    console.error("Failed retrieving data!")
+    return
+  }
+
   const notesRecord = notes?.reduce((acc, note) => {
     acc[note.id] = note;
     return acc;

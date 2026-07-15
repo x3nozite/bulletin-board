@@ -18,6 +18,15 @@ const NoteShape = ({ noteData }: Props) => {
     if (error) console.error(error)
   }
 
+  const deleteNode = useNoteStore((n) => n.deleteNote)
+
+  async function deleteNoteInDB(id: string) {
+    deleteNode(id)
+
+    const supabase = createClient()
+    const response = await supabase.from("Notes").delete().eq("id", id)
+  }
+
   return (
     <Rect
       x={noteData.x}
@@ -28,6 +37,7 @@ const NoteShape = ({ noteData }: Props) => {
       shadowBlur={10}
       draggable
       onDragEnd={(e) => { updateNoteToDB(noteData.id, { x: e.target.x(), y: e.target.y() }) }}
+      onDblClick={() => deleteNoteInDB(noteData.id)}
     />
   )
 }

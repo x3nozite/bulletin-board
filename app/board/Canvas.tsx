@@ -3,6 +3,7 @@ import { Rect, Stage, Layer } from "react-konva";
 import { Note, useNoteStore } from "../store/useNoteStore";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useEffectEvent, useState } from "react";
+import NoteShape from "./NoteShape";
 
 async function NotesData() {
   const supabase = await createClient();
@@ -40,15 +41,9 @@ const Canvas = () => {
     >
       <Layer>
         {Object.values(notes).map((note) => (
-          <Rect
+          <NoteShape
             key={note.id}
-            x={note.x}
-            y={note.y}
-            width={note.width}
-            height={note.height}
-            fill="red"
-            shadowBlur={10}
-            draggable
+            noteData={note}
           />
         ))}
       </Layer>

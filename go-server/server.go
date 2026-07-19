@@ -1,11 +1,26 @@
 package main
 
 import (
+	"bulet_websocket/websocketHandler"
 	"fmt"
-	"net/http"
-
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"net/http"
 )
+
+type Note struct {
+	ID     string  `json:"id"`
+	X      float64 `json:"x"`
+	Y      float64 `json:"y"`
+	Width  float64 `json:"width"`
+	Height float64 `json:"height"`
+	Text   string  `json:"text"`
+}
+
+type WSMessage struct {
+	Action string `json:"action"`
+	Note   Note   `json:"note"`
+}
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -21,7 +36,7 @@ func enableCors(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 }
 
-func wsHandler(w http.ResponseWriter, r *http.Request) {
+func wsHandler(pool *websocketHandler.Pool, w http.ResponseWriter, r *http.Request) {
 	enableCors(w)
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
@@ -35,25 +50,39 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	for {
-		_, msg, err := conn.ReadMessage()
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		fmt.Printf("Received: %s\n", msg)
-
-		err = conn.WriteMessage(websocket.TextMessage, msg)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+	client := &websocketHandler.Client{
+		ID:   uuid.NewString(),
+		Conn: conn,
+		Pool: pool,
 	}
+
+	pool.Register <- client
+	client.Read()
+
+	// for {
+	// 	_, msg, err := conn.ReadMessage()
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 		break
+	// 	}
+	//
+	// 	fmt.Printf("Received: %s\n", msg)
+	//
+	// 	err = conn.WriteMessage(websocket.TextMessage, msg)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 		return
+	// 	}
+	// }
 }
 
 func main() {
-	http.HandleFunc("/ws", wsHandler)
+	pool := websocketHandler.NewPool()
+	go pool.Start()
+
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		wsHandler(pool, w, r)
+	})
 	fmt.Println("websocket on port :8888")
 
 	err := http.ListenAndServe(":8888", nil)

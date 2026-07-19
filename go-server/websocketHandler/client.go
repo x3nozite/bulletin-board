@@ -1,4 +1,4 @@
-package main
+package websocketHandler
 
 import (
 	"fmt"
@@ -29,8 +29,9 @@ func (c *Client) Read() {
 			fmt.Println(err)
 			return
 		}
+
 		msg := Message{Type: msgType, Body: string(p)}
 		c.Pool.Broadcast <- msg
-		fmt.Println("Message Received: %+v\n", msg)
+		fmt.Printf("Client %s Received: %+v\n", c.ID, msg)
 	}
 }

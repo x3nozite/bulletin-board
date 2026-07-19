@@ -26,7 +26,12 @@ export function AddItemBox() {
     addNote(newNote)
     saveNote(newNote)
 
-    wsRef.current?.send(JSON.stringify(newNote))
+    const message = {
+      action: "create",
+      note: newNote
+    }
+
+    wsRef.current?.send(JSON.stringify(message))
   }
 
   useEffect(() => {

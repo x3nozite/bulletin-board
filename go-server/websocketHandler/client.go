@@ -1,6 +1,7 @@
 package websocketHandler
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/gorilla/websocket"
@@ -13,8 +14,9 @@ type Client struct {
 }
 
 type Message struct {
-	Type int    `json:"type"`
-	Body string `json:"body"`
+	Type   int             `json:"type"`
+	Body   json.RawMessage `json:"body"`
+	Sender *Client         `json:"-"`
 }
 
 func (c *Client) Read() {
@@ -30,8 +32,8 @@ func (c *Client) Read() {
 			return
 		}
 
-		msg := Message{Type: msgType, Body: string(p)}
+		msg := Message{Type: msgType, Body: p, Sender: c}
 		c.Pool.Broadcast <- msg
-		fmt.Printf("Client %s Received: %+v\n", c.ID, msg)
+		fmt.Printf("Client %s Received: %+v\n", c.ID, string(msg.Body))
 	}
 }

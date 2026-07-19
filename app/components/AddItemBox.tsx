@@ -16,7 +16,7 @@ export function AddItemBox() {
   const addNote = useNoteStore(n => n.addNote)
   const wsRef = useRef<WebSocket | null>(null);
 
-  const addNewNote = () => {
+  const addNewNote = (originalMsg: boolean = true) => {
     const newNote: Note = {
       id: crypto.randomUUID(),
       x: 50, y: 50,
@@ -31,7 +31,18 @@ export function AddItemBox() {
       note: newNote
     }
 
-    wsRef.current?.send(JSON.stringify(message))
+    if (originalMsg) wsRef.current?.send(JSON.stringify(message))
+  }
+
+  const handleWs = (e: MessageEvent) => {
+    if (!e.data) return
+    const data = JSON.parse(e.data)
+    const action = data.body.action
+
+    if (action === "create") {
+      console.log("create new note")
+      addNote(data.body.note)
+    }
   }
 
   useEffect(() => {
@@ -39,7 +50,7 @@ export function AddItemBox() {
     wsRef.current = ws
 
     ws.onopen = () => console.log("connected")
-    ws.onmessage = (e) => console.log("received: ", e.data)
+    ws.onmessage = (e) => handleWs(e)
 
     return () => {
       if (ws.readyState === WebSocket.CONNECTING) {

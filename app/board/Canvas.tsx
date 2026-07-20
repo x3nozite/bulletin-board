@@ -4,6 +4,7 @@ import { Note, useNoteStore } from "../store/useNoteStore";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useEffectEvent, useState } from "react";
 import NoteShape from "./NoteShape";
+import { useWsStore } from "../store/useWsStore";
 
 async function NotesData() {
   const supabase = await createClient();
@@ -23,7 +24,12 @@ async function NotesData() {
 
 const Canvas = () => {
   const notes = useNoteStore((n) => n.notes)
+  const addNote = useNoteStore(n => n.addNote)
+  const updateNote = useNoteStore(n => n.updateNote)
+  const deleteNode = useNoteStore(n => n.deleteNote)
   const [size, setSize] = useState({ width: 0, height: 0 })
+  const ws = useWsStore(ws => ws.ws)
+  const connectWs = useWsStore(ws => ws.connect)
 
   useEffect(() => {
     setSize({ width: window.innerWidth, height: window.innerHeight })
@@ -37,6 +43,33 @@ const Canvas = () => {
 
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
+
+  }, [])
+
+  const handleWs = (e: MessageEvent) => {
+    if (!e.data) return
+    const data = JSON.parse(e.data)
+    const action = data.body.action
+
+    if (action === "create") {
+      console.log("create new note")
+      addNote(data.body.note)
+    } else if (action === "update") {
+      updateNote(data.body.id, data.body.changes)
+    } else if (action === "delete") {
+      deleteNode(data.body.id)
+    }
+  }
+
+  useEffect(() => {
+    connectWs(handleWs)
+    return () => {
+      if (ws?.readyState === WebSocket.CONNECTING) {
+        ws.close()
+      } else {
+        close()
+      }
+    }
   }, [])
 
   return (

@@ -2,7 +2,8 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { useNoteStore, Note } from "../store/useNoteStore";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { useWsStore } from "../store/useWsStore";
 
 async function saveNote(newNote: Note) {
   const supabase = await createClient()
@@ -14,7 +15,7 @@ async function saveNote(newNote: Note) {
 
 export function AddItemBox() {
   const addNote = useNoteStore(n => n.addNote)
-  const wsRef = useRef<WebSocket | null>(null);
+  const ws = useWsStore(ws => ws.ws)
 
   const addNewNote = (originalMsg: boolean = true) => {
     const newNote: Note = {
@@ -31,35 +32,9 @@ export function AddItemBox() {
       note: newNote
     }
 
-    if (originalMsg) wsRef.current?.send(JSON.stringify(message))
+    if (originalMsg) ws?.send(JSON.stringify(message))
+
   }
-
-  const handleWs = (e: MessageEvent) => {
-    if (!e.data) return
-    const data = JSON.parse(e.data)
-    const action = data.body.action
-
-    if (action === "create") {
-      console.log("create new note")
-      addNote(data.body.note)
-    }
-  }
-
-  useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8888/ws")
-    wsRef.current = ws
-
-    ws.onopen = () => console.log("connected")
-    ws.onmessage = (e) => handleWs(e)
-
-    return () => {
-      if (ws.readyState === WebSocket.CONNECTING) {
-        ws.close()
-      } else {
-        close()
-      }
-    }
-  }, [])
 
   return (
     <button

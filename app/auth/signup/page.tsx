@@ -1,4 +1,5 @@
 import Image from "next/image";
+import SignupForm from "./signupForm";
 
 const page = () => {
   return (
@@ -14,7 +15,7 @@ const page = () => {
         />
       </div>
       <div className="w-1/2 h-full">
-        form
+        <SignupForm></SignupForm>
       </div>
     </div>
   )

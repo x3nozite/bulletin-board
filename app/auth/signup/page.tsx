@@ -1,4 +1,3 @@
-import LoginForm from "./loginForm"
 import Image from "next/image";
 
 const page = () => {
@@ -15,7 +14,7 @@ const page = () => {
         />
       </div>
       <div className="w-1/2 h-full">
-        <LoginForm></LoginForm>
+        form
       </div>
     </div>
   )

@@ -22,6 +22,7 @@ async function NotesData() {
   useNoteStore.setState({ notes: notesRecord })
 }
 
+
 const Canvas = () => {
   const notes = useNoteStore((n) => n.notes)
   const addNote = useNoteStore(n => n.addNote)

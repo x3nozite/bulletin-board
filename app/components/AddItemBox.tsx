@@ -1,44 +1,13 @@
 "use client"
 
-import { createClient } from "@/lib/supabase/client";
-import { useNoteStore, Note } from "../store/useNoteStore";
-import { useEffect } from "react";
-import { useWsStore } from "../store/useWsStore";
-
-async function saveNote(newNote: Note) {
-  const supabase = await createClient()
-  const { error } = await supabase.from("Notes").insert(newNote)
-
-  if (error) console.error(error);
-
+interface Props {
+  buttonOnClick: () => void
 }
 
-export function AddItemBox() {
-  const addNote = useNoteStore(n => n.addNote)
-  const ws = useWsStore(ws => ws.ws)
-
-  const addNewNote = (originalMsg: boolean = true) => {
-    const newNote: Note = {
-      id: crypto.randomUUID(),
-      x: 50, y: 50,
-      width: 150, height: 150,
-      text: "new note"
-    }
-    addNote(newNote)
-    saveNote(newNote)
-
-    const message = {
-      action: "create",
-      note: newNote
-    }
-
-    if (originalMsg) ws?.send(JSON.stringify(message))
-
-  }
-
+export function AddItemBox({ buttonOnClick }: Props) {
   return (
     <button
-      onClick={() => addNewNote()}
+      onClick={() => buttonOnClick()}
       className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/10  text-muted-foreground transition-all hover:border-foreground hover:bg-muted/20 hover:text-foreground group cursor-pointer"
     >
       <div>

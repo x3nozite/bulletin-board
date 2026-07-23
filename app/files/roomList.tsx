@@ -9,26 +9,40 @@ import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 
 async function saveRoom(newRoom: Room) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const { error } = await supabase.from("Rooms").insert(newRoom)
 
   if (error) console.error(error);
 
 }
 
+async function roomsData() {
+  const supabase = createClient()
+  const { data: rooms } = await supabase.from("Rooms").select("id, owner_id, name, updated_at")
+
+  if (!rooms) {
+    console.error("Failed retrieving rooms")
+    return
+  }
+
+  useRoomStore.setState({ rooms: rooms })
+}
+
 export default function RoomList() {
+  const supabase = createClient();
   const rooms = useRoomStore(r => r.rooms)
   const addRoom = useRoomStore(r => r.addRoom)
+  const deleteRoom = useRoomStore(r => r.deleteRoom)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
 
   useEffect(() => {
     async function getUser() {
-      const supabase = await createClient();
       const { data: { user } } = await supabase.auth.getUser()
       setCurrentUser(user)
     }
 
     getUser()
+    roomsData()
   }, [])
 
   function createNewRoom() {
@@ -42,6 +56,12 @@ export default function RoomList() {
     addRoom(newRoom)
     saveRoom(newRoom)
     console.log("addnewroom")
+  }
+
+  async function deleteRoomFromDB(id: string) {
+    deleteRoom(id)
+
+    const response = await supabase.from("Rooms").delete().eq("id", id)
   }
 
   return (
@@ -59,7 +79,12 @@ export default function RoomList() {
         />
       </div>
       <div>
-        this is for all the rooms the user have access to
+        {rooms?.map((room) => (
+          <div key={room.id}>
+            created by: {room.owner_id}. {room.id}
+            <button onClick={() => { deleteRoomFromDB(room.id) }}>Delete room</button>
+          </div>
+        ))}
       </div>
       <div>
         <h2 className="font-bold text-2xl mb-4">Next steps</h2>

@@ -17,7 +17,7 @@ export const useRoomStore = create<RoomStore>((set) => ({
   rooms: [],
   addRoom: (room) =>
     set((state) => ({
-      rooms: { ...state.rooms, room }
+      rooms: [...state.rooms, room]
     })),
   deleteRoom: (id) =>
     set((state) => ({

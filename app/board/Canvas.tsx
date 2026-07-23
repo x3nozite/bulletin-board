@@ -6,24 +6,11 @@ import { useEffect, useEffectEvent, useState } from "react";
 import NoteShape from "./NoteShape";
 import { useWsStore } from "../store/useWsStore";
 
-async function NotesData() {
-  const supabase = await createClient();
-  const { data: notes } = await supabase.from("Notes").select("id, x, y, width, height, text")
-
-  if (!notes) {
-    console.error("Failed retrieving data!")
-    return
-  }
-
-  const notesRecord = notes?.reduce((acc, note) => {
-    acc[note.id] = note;
-    return acc;
-  }, {} as Record<string, Note>);
-  useNoteStore.setState({ notes: notesRecord })
+interface Props {
+  roomId: string | null
 }
 
-
-const Canvas = () => {
+const Canvas = ({ roomId }: Props) => {
   const notes = useNoteStore((n) => n.notes)
   const addNote = useNoteStore(n => n.addNote)
   const updateNote = useNoteStore(n => n.updateNote)
@@ -34,6 +21,27 @@ const Canvas = () => {
 
   useEffect(() => {
     setSize({ width: window.innerWidth, height: window.innerHeight })
+
+    async function NotesData() {
+      const supabase = await createClient();
+
+      let query = supabase.from("Notes").select("id, x, y, width, height, text, room_id")
+
+      query = (roomId) ? query.eq("room_id", roomId) : query.is("room_id", null)
+
+      const { data: notes } = await query
+
+      if (!notes) {
+        console.error("Failed retrieving data!")
+        return
+      }
+
+      const notesRecord = notes?.reduce((acc, note) => {
+        acc[note.id] = note;
+        return acc;
+      }, {} as Record<string, Note>);
+      useNoteStore.setState({ notes: notesRecord })
+    }
     NotesData()
   }, [])
 

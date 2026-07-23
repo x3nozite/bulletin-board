@@ -7,6 +7,7 @@ export type Note = {
   width: number;
   height: number;
   text: string;
+  room_id: string | null;
 }
 
 type NoteStore = {

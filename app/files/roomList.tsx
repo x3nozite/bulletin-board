@@ -7,6 +7,7 @@ import { AddItemBox } from "../components/AddItemBox";
 import { Room, useRoomStore } from "../store/useRoomStore";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
+import Link from "next/link"
 
 async function saveRoom(newRoom: Room) {
   const supabase = createClient()
@@ -81,7 +82,9 @@ export default function RoomList() {
       <div>
         {rooms?.map((room) => (
           <div key={room.id}>
-            created by: {room.owner_id}. {room.id}
+            <Link href={`/board/${room.id}`}>
+              created by: {room.owner_id}. {room.id}
+            </Link>
             <button onClick={() => { deleteRoomFromDB(room.id) }}>Delete room</button>
           </div>
         ))}

@@ -6,8 +6,8 @@ import { Note, useNoteStore } from "../store/useNoteStore"
 import { createClient } from "@/lib/supabase/client"
 import { useWsStore } from "../store/useWsStore"
 
-type Props = {
-  name: string
+interface Props {
+  roomId: string | null
 }
 
 async function saveNote(newNote: Note) {
@@ -18,7 +18,7 @@ async function saveNote(newNote: Note) {
 
 }
 
-export default function Page({ }: Props) {
+export default function Board({ roomId }: Props) {
   const addNote = useNoteStore(n => n.addNote)
   const ws = useWsStore(ws => ws.ws)
 
@@ -28,7 +28,7 @@ export default function Page({ }: Props) {
       x: 50, y: 50,
       width: 150, height: 150,
       text: "new note",
-      room_id: null
+      room_id: roomId,
     }
     addNote(newNote)
     saveNote(newNote)
@@ -50,7 +50,7 @@ export default function Page({ }: Props) {
       </div>
 
       <div className="bg-white">
-        <Canvas roomId={null}></Canvas>
+        <Canvas roomId={roomId}></Canvas>
       </div>
 
     </>

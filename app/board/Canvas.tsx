@@ -71,7 +71,7 @@ const Canvas = ({ roomId }: Props) => {
   }
 
   useEffect(() => {
-    connectWs(handleWs)
+    connectWs(handleWs, roomId)
     return () => {
       if (ws?.readyState === WebSocket.CONNECTING) {
         ws.close()

@@ -9,6 +9,7 @@ type Pool struct {
 	Register   chan *Client
 	Unregister chan *Client
 	Clients    map[*Client]bool
+	Rooms      map[string]map[*Client]bool
 	Broadcast  chan Message
 }
 
@@ -17,6 +18,7 @@ func NewPool() *Pool {
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 		Clients:    make(map[*Client]bool),
+		Rooms:      make(map[string]map[*Client]bool),
 		Broadcast:  make(chan Message),
 	}
 }
@@ -25,30 +27,37 @@ func (pool *Pool) Start() {
 	for {
 		select {
 		case client := <-pool.Register:
-			pool.Clients[client] = true
+			if pool.Rooms[client.RoomID] == nil {
+				pool.Rooms[client.RoomID] = make(map[*Client]bool)
+			}
+			pool.Rooms[client.RoomID][client] = true
 
-			fmt.Println("Size of connection pool: ", len(pool.Clients))
+			fmt.Printf("Size of connection pool (room: %s): %d\n", client.RoomID, len(pool.Rooms[client.RoomID]))
 
-			for client, _ := range pool.Clients {
-				fmt.Println(client)
+			for client, _ := range pool.Rooms[client.RoomID] {
 				client.Conn.WriteJSON(Message{Type: 1, Body: json.RawMessage("New User Joined.")})
 			}
 
 		case client := <-pool.Unregister:
-			delete(pool.Clients, client)
+			delete(pool.Rooms[client.RoomID], client)
 
-			fmt.Println("Size of connection pool: ", len(pool.Clients))
+			fmt.Printf("Size of connection pool (room: %s): %d\n", client.RoomID, len(pool.Rooms[client.RoomID]))
 
-			for client, _ := range pool.Clients {
+			if len(pool.Rooms[client.RoomID]) == 0 {
+				delete(pool.Rooms, client.RoomID)
+			}
+
+			for client, _ := range pool.Rooms[client.RoomID] {
 				client.Conn.WriteJSON(Message{Type: 1, Body: json.RawMessage("User Disconnected.")})
 			}
 		case message := <-pool.Broadcast:
-			fmt.Printf("Broadcasting message to pool: %+v", string(message.Body))
+			// fmt.Printf("Broadcasting message to pool: %+v", string(message.Body))
 
-			for client, _ := range pool.Clients {
+			for client, _ := range pool.Rooms[message.Sender.RoomID] {
 				if client == message.Sender {
 					continue
 				}
+				fmt.Printf("Sent to: %s in %s", client.ID, client.RoomID)
 
 				if err := client.Conn.WriteJSON(message); err != nil {
 					fmt.Println(err)

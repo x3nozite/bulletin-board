@@ -5,6 +5,7 @@ import { LogoutButton } from "../components/logoutButton"
 import { Note, useNoteStore } from "../store/useNoteStore"
 import { createClient } from "@/lib/supabase/client"
 import { useWsStore } from "../store/useWsStore"
+import InvitePopup from "../components/popup"
 
 interface Props {
   roomId: string | null
@@ -47,6 +48,7 @@ export default function Board({ roomId }: Props) {
           buttonOnClick={addNewNote}
         />
         <LogoutButton></LogoutButton>
+        {roomId && InvitePopup({ roomId })}
       </div>
 
       <div className="bg-white">

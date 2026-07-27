@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { Note, useNoteStore } from "../store/useNoteStore"
-import { Rect } from "react-konva";
+import { Rect, Text, Group } from "react-konva";
 import { useEffect, useRef } from "react";
 import { useWsStore } from "../store/useWsStore";
 
@@ -50,27 +50,40 @@ const NoteShape = ({ noteData }: Props) => {
   }
 
   return (
-    <Rect
-      x={noteData.x}
-      y={noteData.y}
-      width={noteData.width}
-      height={noteData.height}
-      fill="red"
-      shadowBlur={10}
-      draggable
-      onDragMove={(e) => {
-        const newPos = { x: e.target.x(), y: e.target.y() }
-        updateNote(noteData.id, newPos)
+    <>
+      <Group
+        x={noteData.x}
+        y={noteData.y}
+        draggable
+        onDragMove={(e) => {
+          const newPos = { x: e.target.x(), y: e.target.y() }
+          updateNote(noteData.id, newPos)
 
-        const now = Date.now()
-        if (now - lastSentRef.current > 100) {
-          sendUpdateToWs({ action: "update", id: noteData.id, changes: newPos })
-          lastSentRef.current = now
-        }
-      }}
-      onDragEnd={(e) => { updateNoteToDB(noteData.id, { x: e.target.x(), y: e.target.y() }) }}
-      onDblClick={() => deleteNoteInDB(noteData.id)}
-    />
+          const now = Date.now()
+          if (now - lastSentRef.current > 50) {
+            sendUpdateToWs({ action: "update", id: noteData.id, changes: newPos })
+            lastSentRef.current = now
+          }
+        }}
+        onDragEnd={(e) => { updateNoteToDB(noteData.id, { x: e.target.x(), y: e.target.y() }) }}
+        onDblClick={() => deleteNoteInDB(noteData.id)}
+      >
+        <Rect
+          width={noteData.width}
+          height={noteData.height}
+          fill="red"
+          shadowBlur={10}
+          draggable
+        />
+        <Text
+          x={5}
+          y={5}
+          text={noteData.text}
+          width={noteData.width}
+          height={noteData.height}
+        />
+      </Group>
+    </>
   )
 }
 

@@ -28,6 +28,30 @@ export default async function InvitePage({ params }: Props) {
     )
   }
 
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect(`/login`)
+  }
+
+  // create room access
+
+  const { data: room } = await supabase
+    .from("Rooms")
+    .select("owner_id")
+    .eq("id", invite.room_id)
+    .maybeSingle()
+
+  if (room?.owner_id !== user.id) {
+    const newRoomAccess = {
+      room_id: invite.room_id,
+      user_id: user.id
+    }
+    await supabase
+      .from("RoomAccess")
+      .upsert(newRoomAccess, { onConflict: "room_id,user_id" })
+  }
+
+
   redirect(`/board/${invite?.room_id}`)
 }
 

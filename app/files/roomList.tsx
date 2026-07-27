@@ -17,9 +17,9 @@ async function saveRoom(newRoom: Room) {
 
 }
 
-async function roomsData() {
+async function roomsData(id: string | null) {
   const supabase = createClient()
-  const { data: rooms } = await supabase.from("Rooms").select("id, owner_id, name, updated_at")
+  const { data: rooms } = await supabase.from("Rooms").select("id, owner_id, name, updated_at").eq("owner_id", id)
 
   if (!rooms) {
     console.error("Failed retrieving rooms")
@@ -39,11 +39,14 @@ export default function RoomList() {
   useEffect(() => {
     async function getUser() {
       const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        redirect("/auth/login")
+      }
       setCurrentUser(user)
+      roomsData(user.id)
     }
 
     getUser()
-    roomsData()
   }, [])
 
   function createNewRoom() {

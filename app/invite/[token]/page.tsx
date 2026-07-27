@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation";
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
 
 export default async function InvitePage({ params }: Props) {
   const p = await params
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: invite, error: error } = await supabase
     .from("RoomInvites")

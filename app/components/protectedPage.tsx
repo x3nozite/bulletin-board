@@ -7,9 +7,9 @@ interface Props {
 
 export default async function ProtectedPage({ children }: Props) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data } = await supabase.auth.getClaims()
 
-  if (!user) {
+  if (!data) {
     redirect("/auth/login")
   }
 

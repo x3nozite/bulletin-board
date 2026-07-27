@@ -12,11 +12,10 @@ interface Props {
 }
 
 async function saveNote(newNote: Note) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const { error } = await supabase.from("Notes").insert(newNote)
 
   if (error) console.error(error);
-
 }
 
 export default function Board({ roomId }: Props) {

@@ -14,7 +14,8 @@ export default async function Page({ params }: Props) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    redirect("/auth/login")
+    // redirect("/auth/login")
+    return <div>YOu are not authorized</div>
   }
 
   const { data: room } = await supabase
@@ -24,7 +25,6 @@ export default async function Page({ params }: Props) {
     .maybeSingle()
 
   const isOwner = room?.owner_id === user.id ? true : false
-  if (isOwner) console.log("is owner")
 
   const { data: roomAccess } = await supabase
     .from("RoomAccess")
@@ -32,8 +32,6 @@ export default async function Page({ params }: Props) {
     .eq("user_id", user.id)
     .eq("room_id", p.roomId)
     .maybeSingle()
-
-  if (roomAccess) console.log("have access")
 
   if (!roomAccess && !isOwner) {
     return <div>You do not have access to this page</div>

@@ -6,45 +6,41 @@ import { Note, useNoteStore } from "../store/useNoteStore"
 import { createClient } from "@/lib/supabase/client"
 import { useWsStore } from "../store/useWsStore"
 import InvitePopup from "../components/popup"
+import { addNewNote } from "../util/noteActions"
+import { useUndoRedoStore } from "../store/useUndoRedoStore"
+import { useEffect } from "react"
 
 interface Props {
   roomId: string | null
 }
 
-async function saveNote(newNote: Note) {
-  const supabase = createClient()
-  const { error } = await supabase.from("Notes").insert(newNote)
-
-  if (error) console.error(error);
-}
-
 export default function Board({ roomId }: Props) {
-  const addNote = useNoteStore(n => n.addNote)
-  const ws = useWsStore(ws => ws.ws)
+  const undo = useUndoRedoStore(ur => ur.undo)
+  const redo = useUndoRedoStore(ur => ur.undo)
 
-  const addNewNote = () => {
-    const newNote: Note = {
-      id: crypto.randomUUID(),
-      x: 50, y: 50,
-      width: 150, height: 150,
-      text: "new note",
-      room_id: roomId,
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+
+      if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === "z") {
+        undo()
+        return;
+      }
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "z") {
+        redo()
+        return;
+      }
     }
-    addNote(newNote)
-    saveNote(newNote)
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  })
 
-    const message = {
-      action: "create",
-      note: newNote
-    }
-
-    ws?.send(JSON.stringify(message))
-  }
   return (
     <>
       <div className="border-2 border-solid border-gray-500 flex justify-center w-fit p-4 fixed mx-auto top-4 inset-x-0 z-10">
         <AddItemBox
-          buttonOnClick={addNewNote}
+          buttonOnClick={() => addNewNote(roomId)}
         />
         <LogoutButton></LogoutButton>
         {roomId && InvitePopup({ roomId })}

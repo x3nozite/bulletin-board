@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { Note, useNoteStore } from "../store/useNoteStore"
 import { Rect, Text, Group } from "react-konva";
-import { RefObject, useEffect, useRef } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import { useWsStore } from "../store/useWsStore";
 import { deleteNoteInDB, updateNoteToDB } from "../util/noteActions";
 import { KonvaEventObject } from "konva/lib/Node";
@@ -11,14 +11,16 @@ interface Props {
   noteData: Note
   onTransformEnd: (e: KonvaEventObject<DragEvent>) => void;
   nodeMap: RefObject<Map<string, Konva.Node>>;
+  onHoldClick: (note: Note) => void
 }
 
-const NoteShape = ({ noteData, onTransformEnd, nodeMap }: Props) => {
+const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick }: Props) => {
   const updateNote = useNoteStore((n) => n.updateNote)
   const deleteNode = useNoteStore((n) => n.deleteNote)
   const ws = useWsStore(ws => ws.ws)
   const lastSentRef = useRef(0)
-
+  const holdTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const [isHolding, setIsHolding] = useState(false)
 
   function sendUpdateToWs(message: { action: string, id: string, changes: Partial<Note> }) {
     if (!ws) return
@@ -43,7 +45,23 @@ const NoteShape = ({ noteData, onTransformEnd, nodeMap }: Props) => {
           }
         }}
         onDragEnd={(e) => { updateNoteToDB(noteData.id, { x: e.target.x(), y: e.target.y() }) }}
-        onDblClick={() => deleteNoteInDB(noteData.id)}
+        onDblClick={() => {
+          onHoldClick(noteData)
+        }}
+        onMouseDown={() => {
+          holdTimer.current = setTimeout(() => {
+            deleteNoteInDB(noteData.id)
+          }, 500)
+        }}
+        onDragStart={() => {
+          clearTimeout(holdTimer.current)
+        }}
+        onMouseUp={() => {
+          clearTimeout(holdTimer.current)
+        }}
+        onMouseLeave={() => {
+          clearTimeout(holdTimer.current)
+        }}
         onTransformEnd={onTransformEnd}
         ref={node => {
           if (node) {

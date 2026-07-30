@@ -9,6 +9,9 @@ import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { updateNoteToDB } from "../util/noteActions";
 import { CornerRightDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import AppDialog from "../components/AppDialog";
 
 interface Props {
   roomId: string | null
@@ -34,6 +37,9 @@ const Canvas = ({ roomId }: Props) => {
   const isSelecting = useRef(false)
   const transformerRef = useRef<Konva.Transformer>(null)
   const noteRefs = useRef(new Map())
+
+  const [editingNote, setEditingNote] = useState<Note | null>(null)
+  const [text, setText] = useState<string>("")
 
   useEffect(() => {
     setSize({ width: window.innerWidth, height: window.innerHeight })
@@ -147,43 +153,65 @@ const Canvas = ({ roomId }: Props) => {
     updateNoteToDB(id, changes)
   }
 
+  function onHoldClick(note: Note) {
+    setEditingNote(note)
+    setText(note.text)
+  }
+
+  function handleSave() {
+    if (!editingNote) return
+    updateNoteToDB(editingNote.id, { text: text })
+    setEditingNote(null)
+  }
+
   return (
-    <Stage
-      width={size.width}
-      height={size.height}
-      onClick={handleStageClick}
-    >
-      <Layer>
-        {Object.values(notes).map((note) => (
-          <NoteShape
-            key={note.id}
-            noteData={note}
-            onTransformEnd={handleTransformEnd}
-            nodeMap={noteRefs}
+    <>
+      <Stage
+        width={size.width}
+        height={size.height}
+        onClick={handleStageClick}
+      >
+        <Layer>
+          {Object.values(notes).map((note) => (
+            <NoteShape
+              key={note.id}
+              noteData={note}
+              onTransformEnd={handleTransformEnd}
+              nodeMap={noteRefs}
+              onHoldClick={onHoldClick}
+            />
+          ))}
+          <Transformer
+            ref={transformerRef}
+            boundBoxFunc={(oldBox, newBox) => {
+              if (newBox.width < 5 || newBox.height < 5) {
+                return oldBox
+              }
+              return newBox
+            }}
+            enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
+            rotateEnabled={false}
           />
-        ))}
-        <Transformer
-          ref={transformerRef}
-          boundBoxFunc={(oldBox, newBox) => {
-            if (newBox.width < 5 || newBox.height < 5) {
-              return oldBox
-            }
-            return newBox
-          }}
-          enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
-          rotateEnabled={false}
-        />
-        {selectionRectangle.visible && (
-          <Rect
-            x={Math.min(selectionRectangle.x1, selectionRectangle.x2)}
-            y={Math.min(selectionRectangle.y1, selectionRectangle.y2)}
-            width={Math.abs(selectionRectangle.x2 - selectionRectangle.x1)}
-            height={Math.abs(selectionRectangle.y2 - selectionRectangle.y1)}
-            fill="rgba(0,0,255,0.5)"
-          />
-        )}
-      </Layer>
-    </Stage>
+          {selectionRectangle.visible && (
+            <Rect
+              x={Math.min(selectionRectangle.x1, selectionRectangle.x2)}
+              y={Math.min(selectionRectangle.y1, selectionRectangle.y2)}
+              width={Math.abs(selectionRectangle.x2 - selectionRectangle.x1)}
+              height={Math.abs(selectionRectangle.y2 - selectionRectangle.y1)}
+              fill="rgba(0,0,255,0.5)"
+            />
+          )}
+        </Layer>
+      </Stage>
+      <AppDialog
+        open={!!editingNote}
+        onOpenChange={(open) => !open && setEditingNote(null)}
+        title="Edit note"
+      >
+        <Textarea value={text} onChange={(e) => setText(e.target.value)} />
+        <Button onClick={handleSave}>Save</Button>
+      </AppDialog>
+    </>
   )
 }
 

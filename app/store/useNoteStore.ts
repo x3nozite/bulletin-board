@@ -8,6 +8,9 @@ export type Note = {
   height: number;
   text: string;
   room_id: string | null;
+  scale_x: number;
+  scale_y: number;
+  font_size: number;
 }
 
 type NoteStore = {

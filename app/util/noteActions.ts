@@ -10,9 +10,6 @@ export async function updateNoteToDB(id: string, changes: Partial<Note>, isUndoR
   const supabase = createClient()
   const { error } = await supabase.from("Notes").update(changes).eq("id", id)
 
-  console.log(before)
-  console.log(changes)
-
   if (error) console.error(error)
 
   const message = {
@@ -57,7 +54,6 @@ export async function deleteNoteInDB(id: string, isUndoRedo: boolean = false) {
       before: before,
     }
     useUndoRedoStore.getState().addEntry(entry)
-    console.log("entry added")
   }
 }
 export async function addNewNote(roomId: string | null = null, isUndoRedo: boolean = false) {
@@ -68,6 +64,9 @@ export async function addNewNote(roomId: string | null = null, isUndoRedo: boole
     width: 150, height: 150,
     text: "new note",
     room_id: roomId,
+    scale_x: 1,
+    scale_y: 1,
+    font_size: 16,
   }
   useNoteStore.getState().addNote(newNote)
 
@@ -90,7 +89,6 @@ export async function addNewNote(roomId: string | null = null, isUndoRedo: boole
       after: newNote
     }
     useUndoRedoStore.getState().addEntry(entry)
-    console.log("entry added")
   }
 }
 
@@ -117,6 +115,5 @@ export async function recoverNote(note: Note, roomId: string | null = null, isUn
       after: newNote
     }
     useUndoRedoStore.getState().addEntry(entry)
-    console.log("entry added")
   }
 }

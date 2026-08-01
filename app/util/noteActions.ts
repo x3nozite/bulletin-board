@@ -18,7 +18,7 @@ export async function updateNoteToDB(id: string, changes: Partial<Note>, isUndoR
     changes: changes
   }
 
-  useWsStore.getState().ws?.send(JSON.stringify(message))
+  useWsStore.getState().sendMessage(JSON.stringify(message))
 
   if (!isUndoRedo) {
     useUndoRedoStore.getState().clearRedoEntries()
@@ -45,7 +45,7 @@ export async function deleteNoteInDB(id: string, isUndoRedo: boolean = false) {
     id: id,
   }
 
-  useWsStore.getState().ws?.send(JSON.stringify(message))
+  useWsStore.getState().sendMessage(JSON.stringify(message))
   if (!isUndoRedo) {
     useUndoRedoStore.getState().clearRedoEntries()
     const entry: NoteEntry = {
@@ -80,7 +80,7 @@ export async function addNewNote(roomId: string | null = null, isUndoRedo: boole
     note: newNote
   }
 
-  useWsStore.getState().ws?.send(JSON.stringify(message))
+  useWsStore.getState().sendMessage(JSON.stringify(message))
   if (!isUndoRedo) {
     useUndoRedoStore.getState().clearRedoEntries()
     const entry: NoteEntry = {
@@ -106,7 +106,7 @@ export async function recoverNote(note: Note, roomId: string | null = null, isUn
     note: newNote
   }
 
-  useWsStore.getState().ws?.send(JSON.stringify(message))
+  useWsStore.getState().sendMessage(JSON.stringify(message))
   if (!isUndoRedo) {
     useUndoRedoStore.getState().clearRedoEntries()
     const entry: NoteEntry = {

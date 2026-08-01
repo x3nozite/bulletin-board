@@ -12,8 +12,9 @@ type WsStore = {
   currentDelay: number;
   reconnectTimer: ReturnType<typeof setTimeout> | undefined;
   connect: (roomId: string | null) => void;
-  disconnect: () => void
-  scheduleReconnect: (roomId: string | null) => void
+  disconnect: () => void;
+  scheduleReconnect: (roomId: string | null) => void;
+  sendMessage: (msg: string) => void;
 }
 
 export const useWsStore = create<WsStore>((set, get) => ({
@@ -49,6 +50,7 @@ export const useWsStore = create<WsStore>((set, get) => ({
 
     ws.onclose = () => {
       console.log("connection lost")
+      set({ ws: null })
       if (get().shouldReconnect) get().scheduleReconnect(roomId)
     }
     set({ ws })
@@ -74,4 +76,9 @@ export const useWsStore = create<WsStore>((set, get) => ({
 
     set({ currentDelay: Math.min(get().currentDelay * MULTIPLIER, MAX_DELAY) })
   },
+  sendMessage: (msg) => {
+    if (!get().ws || get().ws?.readyState !== WebSocket.OPEN) return
+
+    get().ws?.send(msg)
+  }
 }))

@@ -77,23 +77,8 @@ const Canvas = ({ roomId }: Props) => {
 
   }, [])
 
-  const handleWs = (e: MessageEvent) => {
-    if (!e.data) return
-    const data = JSON.parse(e.data)
-    const action = data.body.action
-
-    if (action === "create") {
-      console.log("create new note")
-      addNote(data.body.note)
-    } else if (action === "update") {
-      updateNote(data.body.id, data.body.changes)
-    } else if (action === "delete") {
-      deleteNode(data.body.id)
-    }
-  }
-
   useEffect(() => {
-    connectWs(handleWs, roomId)
+    connectWs(roomId)
     return () => {
       if (ws?.readyState === WebSocket.CONNECTING) {
         ws.close()

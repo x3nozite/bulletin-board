@@ -6,11 +6,14 @@ const MAX_DELAY = 30000;
 const MULTIPLIER = 2;
 const JITTER = 0.1
 
+type ConnectionStatus = "CONNECTING" | "CONNECTED" | "DISCONNECTED"
+
 type WsStore = {
   ws: WebSocket | null;
   shouldReconnect: boolean;
   currentDelay: number;
   reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+  status: ConnectionStatus
   connect: (roomId: string | null) => void;
   disconnect: () => void;
   scheduleReconnect: (roomId: string | null) => void;
@@ -22,12 +25,15 @@ export const useWsStore = create<WsStore>((set, get) => ({
   shouldReconnect: true,
   currentDelay: INITIAL_DELAY,
   reconnectTimer: undefined,
+  status: "DISCONNECTED",
   connect: (roomId: string | null) => {
+    set({ status: "CONNECTING" })
     if (get().ws) return;
     const ws = new WebSocket(`ws://localhost:8888/ws?room=${roomId}`)
 
     ws.onopen = () => {
       console.log("Connection established")
+      set({ status: "CONNECTED" })
       set({ currentDelay: INITIAL_DELAY })
       set({ shouldReconnect: true })
     }
@@ -52,6 +58,7 @@ export const useWsStore = create<WsStore>((set, get) => ({
       console.log("connection lost")
       set({ ws: null })
       if (get().shouldReconnect) get().scheduleReconnect(roomId)
+      else set({ status: "DISCONNECTED" })
     }
     set({ ws })
   },
@@ -61,7 +68,6 @@ export const useWsStore = create<WsStore>((set, get) => ({
     if (get().ws) get().ws?.close(1000, "Client closing")
   },
   scheduleReconnect: (roomId) => {
-    console.log("reconnecting...", roomId)
     const jitterRange = get().currentDelay * JITTER
     const jitterValue = Math.random() * jitterRange - (jitterRange / 2)
     const delay = Math.round(get().currentDelay + jitterValue)

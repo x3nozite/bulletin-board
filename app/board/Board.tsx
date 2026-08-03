@@ -9,6 +9,7 @@ import InvitePopup from "../components/popup"
 import { addNewNote } from "../util/noteActions"
 import { useUndoRedoStore } from "../store/useUndoRedoStore"
 import { useEffect } from "react"
+import { ConnectionStatus } from "../components/ConnectionStatus"
 
 interface Props {
   roomId: string | null
@@ -44,6 +45,7 @@ export default function Board({ roomId }: Props) {
         />
         <LogoutButton></LogoutButton>
         {roomId && InvitePopup({ roomId })}
+        <ConnectionStatus></ConnectionStatus>
       </div>
 
       <div className="bg-white">

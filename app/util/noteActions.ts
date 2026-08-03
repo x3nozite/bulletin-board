@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Note, useNoteStore } from "../store/useNoteStore"
 import { useWsStore } from "../store/useWsStore"
 import { NoteEntry, useUndoRedoStore } from "../store/useUndoRedoStore"
+import { toast } from "sonner"
 
 export async function updateNoteToDB(id: string, changes: Partial<Note>, isUndoRedo: boolean = false) {
   const before = { ...useNoteStore.getState().notes[id] }

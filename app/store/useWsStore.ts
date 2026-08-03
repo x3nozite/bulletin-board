@@ -64,6 +64,7 @@ export const useWsStore = create<WsStore>((set, get) => ({
   },
   disconnect: () => {
     set({ shouldReconnect: false })
+    set({ status: "DISCONNECTED" })
     if (get().reconnectTimer) clearTimeout(get().reconnectTimer)
     if (get().ws) get().ws?.close(1000, "Client closing")
   },

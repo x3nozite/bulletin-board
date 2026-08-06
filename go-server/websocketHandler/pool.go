@@ -41,8 +41,17 @@ func (pool *Pool) Start() {
 			body, _ := json.Marshal(payload)
 
 			for c, _ := range pool.Rooms[client.RoomID] {
+				payload := map[string]string{
+					"action":   "join",
+					"clientId": c.ID,
+				}
+				body, _ := json.Marshal(payload)
+				client.Conn.WriteJSON(Message{Type: 1, Body: body, Sender: c})
+			}
+
+			for c, _ := range pool.Rooms[client.RoomID] {
 				// client.Conn.WriteJSON(Message{Type: 1, Body: json.RawMessage("New User Joined.")})
-				if c == client {
+				if c.ID == client.ID {
 					continue
 				}
 				c.Conn.WriteJSON(Message{Type: 1, Body: body, Sender: client})
@@ -53,12 +62,22 @@ func (pool *Pool) Start() {
 
 			fmt.Printf("Size of connection pool (room: %s): %d\n", client.RoomID, len(pool.Rooms[client.RoomID]))
 
+			payload := map[string]string{
+				"action":   "leave",
+				"clientId": client.ID,
+			}
+			body, _ := json.Marshal(payload)
+
 			if len(pool.Rooms[client.RoomID]) == 0 {
 				delete(pool.Rooms, client.RoomID)
 			}
 
-			for client, _ := range pool.Rooms[client.RoomID] {
-				client.Conn.WriteJSON(Message{Type: 1, Body: json.RawMessage("User Disconnected.")})
+			for c, _ := range pool.Rooms[client.RoomID] {
+				// client.Conn.WriteJSON(Message{Type: 1, Body: json.RawMessage("New User Joined.")})
+				if c.ID == client.ID {
+					continue
+				}
+				c.Conn.WriteJSON(Message{Type: 1, Body: body, Sender: client})
 			}
 		case message := <-pool.Broadcast:
 			for client, _ := range pool.Rooms[message.Sender.RoomID] {

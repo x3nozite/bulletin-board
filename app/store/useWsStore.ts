@@ -2,6 +2,8 @@ import { create } from "zustand"
 import { useNoteStore } from "./useNoteStore";
 import { refecthNotesData } from "../util/noteActions";
 import { createClient } from "@/lib/supabase/client";
+import { usePresenceStore } from "./usePresenceStore";
+import { fetchProfile } from "../util/presenceUtil";
 
 const INITIAL_DELAY = 1000;
 const MAX_DELAY = 30000;
@@ -58,6 +60,11 @@ export const useWsStore = create<WsStore>((set, get) => ({
         useNoteStore.getState().deleteNote(data.body.id)
       } else if (action === "join") {
         console.log("update presence")
+        const clientId = data.body.clientId
+        fetchProfile(clientId)
+      } else if (action === "leave") {
+        const clientId = data.body.clientId
+        usePresenceStore.getState().disableProfile(clientId)
       }
     }
 

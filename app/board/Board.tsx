@@ -9,6 +9,7 @@ import InvitePopup from "../components/popup"
 import { addNewNote } from "../util/noteActions"
 import { useUndoRedoStore } from "../store/useUndoRedoStore"
 import { useEffect } from "react"
+import { PresenceIndicator } from "./PresenceIndicator"
 import { ConnectionStatus } from "../components/ConnectionStatus"
 
 interface Props {
@@ -39,12 +40,17 @@ export default function Board({ roomId }: Props) {
 
   return (
     <>
-      <div className="border-2 border-solid border-gray-500 flex justify-center w-fit p-4 fixed mx-auto top-4 inset-x-0 z-10">
-        <AddItemBox
-          buttonOnClick={() => addNewNote(roomId)}
-        />
-        <LogoutButton></LogoutButton>
-        {roomId && InvitePopup({ roomId })}
+      <div>
+        <div className="border-2 border-solid border-gray-500 flex justify-center w-fit p-4 fixed mx-auto top-4 inset-x-0 z-10">
+          <AddItemBox
+            buttonOnClick={() => addNewNote(roomId)}
+          />
+          <LogoutButton></LogoutButton>
+          {roomId && InvitePopup({ roomId })}
+        </div>
+        <div>
+          <PresenceIndicator></PresenceIndicator>
+        </div>
       </div>
 
       <div className="bg-white">

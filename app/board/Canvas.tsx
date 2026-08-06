@@ -102,7 +102,6 @@ const Canvas = ({ roomId }: Props) => {
   }, [selectedIds, notes])
 
   function handleStageClick(e: KonvaEventObject<MouseEvent>) {
-    console.log(e.target.name())
     const selWidth = Math.abs(selectionRectangle.x2 - selectionRectangle.x1)
     const selHeight = Math.abs(selectionRectangle.y2 - selectionRectangle.y1)
     if (selectionRectangle.visible && selWidth > 0 && selHeight > 0) return
@@ -123,8 +122,6 @@ const Canvas = ({ roomId }: Props) => {
     const id = e.target.id()
     const node = e.target
     const note = notes[id]
-    console.log(node.scaleX())
-    console.log(note.width)
     const changes: Partial<Note> = {
       x: node.x(),
       y: node.y(),

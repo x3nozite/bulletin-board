@@ -56,6 +56,8 @@ export const useWsStore = create<WsStore>((set, get) => ({
         useNoteStore.getState().updateNote(data.body.id, data.body.changes)
       } else if (action === "delete") {
         useNoteStore.getState().deleteNote(data.body.id)
+      } else if (action === "join") {
+        console.log("update presence")
       }
     }
 

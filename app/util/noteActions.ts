@@ -118,3 +118,25 @@ export async function recoverNote(note: Note, roomId: string | null = null, isUn
     useUndoRedoStore.getState().addEntry(entry)
   }
 }
+
+export async function refecthNotesData(roomId: string | null) {
+  const supabase = createClient();
+
+  let query = supabase.from("Notes").select("id, x, y, width, height, text, room_id, scale_x, scale_y, font_size")
+
+  query = (roomId) ? query.eq("room_id", roomId) : query.is("room_id", null)
+
+  const { data: notes } = await query
+
+  if (!notes) {
+    console.error("Failed retrieving data!")
+    return
+  }
+
+  const notesRecord = notes?.reduce((acc, note) => {
+    acc[note.id] = note;
+    return acc;
+  }, {} as Record<string, Note>);
+  useNoteStore.setState({ notes: notesRecord })
+
+}

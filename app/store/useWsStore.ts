@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { useNoteStore } from "./useNoteStore";
+import { refecthNotesData } from "../util/noteActions";
 
 const INITIAL_DELAY = 1000;
 const MAX_DELAY = 30000;
@@ -36,6 +37,7 @@ export const useWsStore = create<WsStore>((set, get) => ({
       set({ status: "CONNECTED" })
       set({ currentDelay: INITIAL_DELAY })
       set({ shouldReconnect: true })
+      refecthNotesData(roomId)
     }
 
     const wsHandler = (e: MessageEvent) => {

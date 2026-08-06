@@ -19,10 +19,11 @@ async function saveRoom(newRoom: Room) {
 
 async function roomsData(id: string | null) {
   const supabase = createClient()
-  const { data: rooms } = await supabase.from("Rooms").select("id, owner_id, name, updated_at").eq("owner_id", id)
+  const { data: rooms, error } = await supabase.from("Rooms").select("id, owner_id, name, updated_at").eq("owner_id", id)
 
   if (!rooms) {
     console.error("Failed retrieving rooms")
+    console.error(error)
     return
   }
 

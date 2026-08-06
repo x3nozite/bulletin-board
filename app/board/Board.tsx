@@ -45,12 +45,12 @@ export default function Board({ roomId }: Props) {
         />
         <LogoutButton></LogoutButton>
         {roomId && InvitePopup({ roomId })}
-        <ConnectionStatus></ConnectionStatus>
       </div>
 
       <div className="bg-white">
         <Canvas roomId={roomId}></Canvas>
       </div>
+      <ConnectionStatus></ConnectionStatus>
 
     </>
   )

@@ -33,6 +33,7 @@ func (pool *Pool) Start() {
 			pool.Rooms[client.RoomID][client] = true
 
 			fmt.Printf("Size of connection pool (room: %s): %d\n", client.RoomID, len(pool.Rooms[client.RoomID]))
+			fmt.Printf("Client joined: %s", string(client.ID))
 
 			for client, _ := range pool.Rooms[client.RoomID] {
 				client.Conn.WriteJSON(Message{Type: 1, Body: json.RawMessage("New User Joined.")})

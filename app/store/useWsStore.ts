@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { useNoteStore } from "./useNoteStore";
 import { refecthNotesData } from "../util/noteActions";
+import { createClient } from "@/lib/supabase/client";
 
 const INITIAL_DELAY = 1000;
 const MAX_DELAY = 30000;
@@ -27,10 +28,14 @@ export const useWsStore = create<WsStore>((set, get) => ({
   currentDelay: INITIAL_DELAY,
   reconnectTimer: undefined,
   status: "DISCONNECTED",
-  connect: (roomId: string | null) => {
+  connect: async (roomId: string | null) => {
     set({ status: "CONNECTING" })
     if (get().ws) return;
-    const ws = new WebSocket(`ws://localhost:8888/ws?room=${roomId}`)
+
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+    const ws = new WebSocket(`ws://localhost:8888/ws?room=${roomId}&token=${token}`)
 
     ws.onopen = () => {
       console.log("Connection established")

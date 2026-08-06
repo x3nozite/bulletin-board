@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
+	"bulet_websocket/jwtHandler"
 	"github.com/gorilla/websocket"
 )
 
@@ -35,6 +35,13 @@ func wsHandler(pool *websocketHandler.Pool, w http.ResponseWriter, r *http.Reque
 		roomID = "global"
 	}
 
+	accessToken := r.URL.Query().Get("token")
+	claims, err := jwtHandler.ValidateSupabaseToken(accessToken)
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println(err)
@@ -43,7 +50,7 @@ func wsHandler(pool *websocketHandler.Pool, w http.ResponseWriter, r *http.Reque
 	defer conn.Close()
 
 	client := &websocketHandler.Client{
-		ID:     uuid.NewString(),
+		ID:     claims.Subject,
 		Conn:   conn,
 		Pool:   pool,
 		RoomID: roomID,

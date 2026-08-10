@@ -6,21 +6,26 @@ import { useWsStore } from "../store/useWsStore";
 import { deleteNoteInDB, updateNoteToDB } from "../util/noteActions";
 import { KonvaEventObject } from "konva/lib/Node";
 import Konva from "konva";
+import { useNoteLockStore } from "../store/useNoteLockStore";
 
 interface Props {
   noteData: Note
   onTransformEnd: (e: KonvaEventObject<DragEvent>) => void;
   nodeMap: RefObject<Map<string, Konva.Node>>;
-  onHoldClick: (note: Note) => void
+  onHoldClick: (note: Note) => void;
+  userId: string;
 }
 
-const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick }: Props) => {
+const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick, userId }: Props) => {
   const updateNote = useNoteStore((n) => n.updateNote)
   const deleteNode = useNoteStore((n) => n.deleteNote)
   const ws = useWsStore(ws => ws.ws)
   const lastSentRef = useRef(0)
   const holdTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const [isHolding, setIsHolding] = useState(false)
+  const lockedNotes = useNoteLockStore(n => n.lockedNotes)
+  const lock = useNoteLockStore(n => n.lock)
+  const unlock = useNoteLockStore(n => n.unlock)
 
   function sendUpdateToWs(message: { action: string, id: string, changes: Partial<Note> }) {
     if (!ws) return
@@ -44,7 +49,10 @@ const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick }: Props) =>
             lastSentRef.current = now
           }
         }}
-        onDragEnd={(e) => { updateNoteToDB(noteData.id, { x: e.target.x(), y: e.target.y() }) }}
+        onDragEnd={(e) => {
+          updateNoteToDB(noteData.id, { x: e.target.x(), y: e.target.y() })
+          unlock(noteData.id)
+        }}
         onDblClick={() => {
           onHoldClick(noteData)
         }}
@@ -55,6 +63,7 @@ const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick }: Props) =>
         }}
         onDragStart={() => {
           clearTimeout(holdTimer.current)
+          lock(noteData.id, userId)
         }}
         onMouseUp={() => {
           clearTimeout(holdTimer.current)
@@ -74,7 +83,7 @@ const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick }: Props) =>
           name="note"
           width={noteData.width}
           height={noteData.height}
-          fill="red"
+          fill={lockedNotes[noteData.id] ? (lockedNotes[noteData.id] === userId ? "red" : "black") : "red"}
           shadowBlur={10}
         />
         <Text

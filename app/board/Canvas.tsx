@@ -12,6 +12,7 @@ import { CornerRightDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import AppDialog from "../components/AppDialog";
+import { randomUUID } from "crypto";
 
 interface Props {
   roomId: string | null
@@ -19,12 +20,10 @@ interface Props {
 
 const Canvas = ({ roomId }: Props) => {
   const notes = useNoteStore((n) => n.notes)
-  const addNote = useNoteStore(n => n.addNote)
-  const updateNote = useNoteStore(n => n.updateNote)
-  const deleteNode = useNoteStore(n => n.deleteNote)
   const [size, setSize] = useState({ width: 0, height: 0 })
   const ws = useWsStore(ws => ws.ws)
   const connectWs = useWsStore(ws => ws.connect)
+  const [userId, setUserId] = useState<string>("")
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectionRectangle, setSelectionRectangle] = useState({
@@ -44,27 +43,17 @@ const Canvas = ({ roomId }: Props) => {
   useEffect(() => {
     setSize({ width: window.innerWidth, height: window.innerHeight })
 
-    // async function NotesData() {
-    //   const supabase = await createClient();
-    //
-    //   let query = supabase.from("Notes").select("id, x, y, width, height, text, room_id, scale_x, scale_y, font_size")
-    //
-    //   query = (roomId) ? query.eq("room_id", roomId) : query.is("room_id", null)
-    //
-    //   const { data: notes } = await query
-    //
-    //   if (!notes) {
-    //     console.error("Failed retrieving data!")
-    //     return
-    //   }
-    //
-    //   const notesRecord = notes?.reduce((acc, note) => {
-    //     acc[note.id] = note;
-    //     return acc;
-    //   }, {} as Record<string, Note>);
-    //   useNoteStore.setState({ notes: notesRecord })
-    // }
-    // NotesData()
+    async function getUser() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        setUserId(crypto.randomUUID())
+      } else {
+        setUserId(user.id)
+      }
+    }
+    getUser()
   }, [])
 
   useEffect(() => {
@@ -161,6 +150,7 @@ const Canvas = ({ roomId }: Props) => {
               onTransformEnd={handleTransformEnd}
               nodeMap={noteRefs}
               onHoldClick={onHoldClick}
+              userId={userId}
             />
           ))}
           <Transformer

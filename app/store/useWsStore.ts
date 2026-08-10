@@ -4,6 +4,7 @@ import { refecthNotesData } from "../util/noteActions";
 import { createClient } from "@/lib/supabase/client";
 import { usePresenceStore } from "./usePresenceStore";
 import { fetchProfile } from "../util/presenceUtil";
+import { useNoteLockStore } from "./useNoteLockStore";
 
 const INITIAL_DELAY = 1000;
 const MAX_DELAY = 30000;
@@ -65,6 +66,10 @@ export const useWsStore = create<WsStore>((set, get) => ({
       } else if (action === "leave") {
         const clientId = data.body.clientId
         usePresenceStore.getState().disableProfile(clientId)
+      } else if (action === "lock") {
+        useNoteLockStore.getState().lock(data.body.note, data.body.editor, false)
+      } else if (action === "unlock") {
+        useNoteLockStore.getState().unlock(data.body.note, false)
       }
     }
 

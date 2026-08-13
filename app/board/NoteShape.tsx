@@ -7,6 +7,8 @@ import { deleteNoteInDB, updateNoteToDB } from "../util/noteActions";
 import { KonvaEventObject } from "konva/lib/Node";
 import Konva from "konva";
 import { useNoteLockStore } from "../store/useNoteLockStore";
+import { Jersey_20 } from "next/font/google";
+import { usePresenceStore } from "../store/usePresenceStore";
 
 interface Props {
   noteData: Note
@@ -26,6 +28,10 @@ const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick, userId }: P
   const lockedNotes = useNoteLockStore(n => n.lockedNotes)
   const lock = useNoteLockStore(n => n.lock)
   const unlock = useNoteLockStore(n => n.unlock)
+
+  const editorId = useNoteLockStore(n => n.lockedNotes[noteData.id])
+  const editorProfile = usePresenceStore(p => (editorId ? p.profiles[editorId] : undefined))
+  const borderWidth = 3
 
   function sendUpdateToWs(message: { action: string, id: string, changes: Partial<Note> }) {
     if (!ws) return
@@ -83,8 +89,10 @@ const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick, userId }: P
           name="note"
           width={noteData.width}
           height={noteData.height}
-          fill={lockedNotes[noteData.id] ? (lockedNotes[noteData.id] === userId ? "red" : "black") : "red"}
+          fill="red"
           shadowBlur={10}
+          stroke={editorProfile?.color ?? "black"}
+          strokeWidth={lockedNotes[noteData.id] ? (lockedNotes[noteData.id] === userId ? 0 : borderWidth) : 0}
         />
         <Text
           id={noteData.id}
@@ -97,6 +105,25 @@ const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick, userId }: P
           height={noteData.height - noteData.font_size / 2}
           listening={false}
         />
+        {editorProfile && (
+          <>
+            <Rect
+              y={-20}
+              height={20}
+              width={100}
+              fill={editorProfile.color ?? "black"}
+            />
+            <Text
+              y={-20}
+              x={5}
+              height={20}
+              width={100}
+              fontSize={noteData.font_size}
+              fill="black"
+              text={editorProfile.name ?? "unkown"}
+            />
+          </>
+        )}
       </Group>
     </>
   )

@@ -4,7 +4,8 @@ export type Profile = {
   id: string,
   name: string,
   avatarUrl: string,
-  active: boolean
+  active: boolean,
+  color: string,
 }
 
 type PresenceStore = {

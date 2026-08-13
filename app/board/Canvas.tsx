@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import AppDialog from "../components/AppDialog";
 import { randomUUID } from "crypto";
+import { useNoteLockStore } from "../store/useNoteLockStore";
 
 interface Props {
   roomId: string | null
@@ -39,6 +40,9 @@ const Canvas = ({ roomId }: Props) => {
 
   const [editingNote, setEditingNote] = useState<Note | null>(null)
   const [text, setText] = useState<string>("")
+
+  const lock = useNoteLockStore(n => n.lock)
+  const unlock = useNoteLockStore(n => n.unlock)
 
   useEffect(() => {
     setSize({ width: window.innerWidth, height: window.innerHeight })
@@ -127,10 +131,12 @@ const Canvas = ({ roomId }: Props) => {
   function onHoldClick(note: Note) {
     setEditingNote(note)
     setText(note.text)
+    lock(note.id, userId)
   }
 
   function handleSave() {
     if (!editingNote) return
+    unlock(editingNote.id)
     updateNoteToDB(editingNote.id, { text: text })
     setEditingNote(null)
   }
@@ -177,7 +183,12 @@ const Canvas = ({ roomId }: Props) => {
       </Stage>
       <AppDialog
         open={!!editingNote}
-        onOpenChange={(open) => !open && setEditingNote(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            if (editingNote) unlock(editingNote.id)
+            setEditingNote(null)
+          }
+        }}
         title="Edit note"
       >
         <Textarea value={text} onChange={(e) => setText(e.target.value)} />

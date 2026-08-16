@@ -66,6 +66,7 @@ export const useWsStore = create<WsStore>((set, get) => ({
       } else if (action === "leave") {
         const clientId = data.body.clientId
         usePresenceStore.getState().disableProfile(clientId)
+        useNoteLockStore.getState().unlockDisconnectedUser(data.body.clientId)
       } else if (action === "lock") {
         useNoteLockStore.getState().lock(data.body.note, data.body.editor, false)
       } else if (action === "unlock") {

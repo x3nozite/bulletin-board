@@ -6,20 +6,22 @@ import (
 )
 
 type Pool struct {
-	Register   chan *Client
-	Unregister chan *Client
-	Clients    map[*Client]bool
-	Rooms      map[string]map[*Client]bool
-	Broadcast  chan Message
+	Register    chan *Client
+	Unregister  chan *Client
+	Clients     map[*Client]bool
+	Rooms       map[string]map[*Client]bool
+	Broadcast   chan Message
+	LockedNotes map[string]map[string]string
 }
 
 func NewPool() *Pool {
 	return &Pool{
-		Register:   make(chan *Client),
-		Unregister: make(chan *Client),
-		Clients:    make(map[*Client]bool),
-		Rooms:      make(map[string]map[*Client]bool),
-		Broadcast:  make(chan Message),
+		Register:    make(chan *Client),
+		Unregister:  make(chan *Client),
+		Clients:     make(map[*Client]bool),
+		Rooms:       make(map[string]map[*Client]bool),
+		Broadcast:   make(chan Message),
+		LockedNotes: make(map[string]map[string]string),
 	}
 }
 
@@ -47,6 +49,16 @@ func (pool *Pool) Start() {
 				}
 				body, _ := json.Marshal(payload)
 				client.Conn.WriteJSON(Message{Type: 1, Body: body, Sender: c})
+			}
+
+			for noteId, editorId := range pool.LockedNotes[client.RoomID] {
+				payload := map[string]string{
+					"action": "lock",
+					"note":   noteId,
+					"editor": editorId,
+				}
+				body, _ := json.Marshal(payload)
+				client.Conn.WriteJSON(Message{Type: 1, Body: body, Sender: client})
 			}
 
 			for c, _ := range pool.Rooms[client.RoomID] {
@@ -80,11 +92,28 @@ func (pool *Pool) Start() {
 				c.Conn.WriteJSON(Message{Type: 1, Body: body, Sender: client})
 			}
 		case message := <-pool.Broadcast:
+			var parsed struct {
+				Action   string `json:"action"`
+				NoteId   string `json:"note"`
+				EditorId string `json:"editor"`
+			}
+			json.Unmarshal(message.Body, &parsed)
+
+			switch parsed.Action {
+			case "lock":
+				if pool.LockedNotes[message.Sender.RoomID] == nil {
+					pool.LockedNotes[message.Sender.RoomID] = make(map[string]string)
+				}
+				pool.LockedNotes[message.Sender.RoomID][parsed.NoteId] = parsed.EditorId
+			case "unlock":
+				delete(pool.LockedNotes[message.Sender.RoomID], parsed.NoteId)
+			default:
+			}
+
 			for client, _ := range pool.Rooms[message.Sender.RoomID] {
 				if client == message.Sender {
 					continue
 				}
-				fmt.Printf("Sent to: %s in %s", client.ID, client.RoomID)
 
 				if err := client.Conn.WriteJSON(message); err != nil {
 					fmt.Println(err)

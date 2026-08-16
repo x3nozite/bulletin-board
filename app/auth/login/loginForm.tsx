@@ -36,6 +36,22 @@ const LoginForm = () => {
     }
   }
 
+  async function handleGoogleLogin() {
+    const supabase = createClient()
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        }
+      },
+    })
+    if (error) console.error("OAuth error: ", error)
+    console.log("OAuth data:", data);
+  }
+
   return (
     <div className="font-mono h-full">
       <Card className="h-full rounded-2xl flex justify-center p-4 gap-12">
@@ -83,6 +99,9 @@ const LoginForm = () => {
               </Link>
             </div>
           </form>
+          <div>
+            <Button onClick={handleGoogleLogin}>Login with google</Button>
+          </div>
         </CardContent>
       </Card>
     </div>

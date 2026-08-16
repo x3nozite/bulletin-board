@@ -45,7 +45,8 @@ const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick, userId }: P
         x={noteData.x}
         y={noteData.y}
         name="note"
-        draggable
+        draggable={!editorId || editorId === userId}
+        listening={!editorId || editorId === userId}
         onDragMove={(e) => {
           const newPos = { x: e.target.x(), y: e.target.y() }
 
@@ -60,6 +61,7 @@ const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick, userId }: P
           unlock(noteData.id)
         }}
         onDblClick={() => {
+          if (editorId && editorId !== userId) return
           onHoldClick(noteData)
         }}
         onMouseDown={() => {
@@ -92,7 +94,7 @@ const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick, userId }: P
           fill="red"
           shadowBlur={10}
           stroke={editorProfile?.color ?? "black"}
-          strokeWidth={lockedNotes[noteData.id] ? (lockedNotes[noteData.id] === userId ? 0 : borderWidth) : 0}
+          strokeWidth={editorId ? (editorId === userId ? 0 : borderWidth) : 0}
         />
         <Text
           id={noteData.id}

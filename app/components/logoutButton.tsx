@@ -12,7 +12,7 @@ export function LogoutButton() {
     await supabase.auth.signOut()
 
     // 2. Refresh router & redirect user to login page
-    router.push("/login")
+    router.push("auth/login")
     router.refresh()
   }
 

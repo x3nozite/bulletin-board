@@ -10,7 +10,9 @@ import { addNewNote } from "../util/noteActions"
 import { useUndoRedoStore } from "../store/useUndoRedoStore"
 import { useEffect } from "react"
 import { PresenceIndicator } from "./PresenceIndicator"
+import { Button } from "@/components/ui/button"
 import { ConnectionStatus } from "../components/ConnectionStatus"
+import { useRouter } from "next/navigation"
 
 interface Props {
   roomId: string | null
@@ -19,6 +21,7 @@ interface Props {
 export default function Board({ roomId }: Props) {
   const undo = useUndoRedoStore(ur => ur.undo)
   const redo = useUndoRedoStore(ur => ur.undo)
+  const router = useRouter()
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -40,20 +43,27 @@ export default function Board({ roomId }: Props) {
 
   return (
     <>
-      <div>
-        <div className="border-2 border-solid border-gray-500 flex justify-center w-fit p-4 fixed mx-auto top-4 inset-x-0 z-10">
-          <AddItemBox
-            buttonOnClick={() => addNewNote(roomId)}
-          />
-          <LogoutButton></LogoutButton>
-          {roomId && InvitePopup({ roomId })}
+      <div className="fixed top-0 inset-x-0 z-10 flex-row gap-20">
+        <div className="grid grid-cols-3 items-center px-4 py-2 bg-white">
+          <div className="justify-self-start"></div>
+          <div className="justify-self-center border-2 border-solid border-gray-500 flex items-center gap-2">
+            <AddItemBox
+              buttonOnClick={() => addNewNote(roomId)}
+            />
+            {roomId && InvitePopup({ roomId })}
+          </div>
+          <div className="justify-self-end">
+            <Button onClick={() => router.push("/files")}>Go to files</Button>
+            <LogoutButton></LogoutButton>
+          </div>
         </div>
-        <div>
+
+        <div className="mt-4 mx-4">
           <PresenceIndicator></PresenceIndicator>
         </div>
       </div>
 
-      <div className="bg-white">
+      <div className="bg-cyan-100">
         <Canvas roomId={roomId}></Canvas>
       </div>
       <ConnectionStatus></ConnectionStatus>

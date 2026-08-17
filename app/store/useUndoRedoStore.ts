@@ -58,6 +58,7 @@ export const useUndoRedoStore = create<UndoRedoStore>((set, get) => ({
         } else {
           if (note) {
             toast("Redo failed — note already exists")
+            return
           }
           recoverNote(entry.after, null, true)
         }
@@ -80,7 +81,7 @@ export const useUndoRedoStore = create<UndoRedoStore>((set, get) => ({
             toast("Redo failed — note no longer exists")
             return
           }
-          deleteNoteInDB(entry.noteId)
+          deleteNoteInDB(entry.noteId, true)
         }
         break
     }

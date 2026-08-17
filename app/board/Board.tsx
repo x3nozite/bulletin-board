@@ -20,7 +20,7 @@ interface Props {
 
 export default function Board({ roomId }: Props) {
   const undo = useUndoRedoStore(ur => ur.undo)
-  const redo = useUndoRedoStore(ur => ur.undo)
+  const redo = useUndoRedoStore(ur => ur.redo)
   const router = useRouter()
 
   useEffect(() => {
@@ -44,9 +44,9 @@ export default function Board({ roomId }: Props) {
   return (
     <>
       <div className="fixed top-0 inset-x-0 z-10 flex-row gap-20">
-        <div className="grid grid-cols-3 items-center px-4 py-2 bg-white">
+        <div className="grid grid-cols-3 items-center px-4 py-2 bg-purple-100">
           <div className="justify-self-start"></div>
-          <div className="justify-self-center border-2 border-solid border-gray-500 flex items-center gap-2">
+          <div className="justify-self-center flex items-center gap-2">
             <AddItemBox
               buttonOnClick={() => addNewNote(roomId)}
             />
@@ -63,7 +63,7 @@ export default function Board({ roomId }: Props) {
         </div>
       </div>
 
-      <div className="bg-cyan-100">
+      <div className="">
         <Canvas roomId={roomId}></Canvas>
       </div>
       <ConnectionStatus></ConnectionStatus>

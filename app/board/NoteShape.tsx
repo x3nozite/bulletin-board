@@ -1,13 +1,12 @@
-import { createClient } from "@/lib/supabase/client";
-import { Note, useNoteStore } from "../store/useNoteStore"
+import { Note } from "../store/useNoteStore"
 import { Rect, Text, Group } from "react-konva";
-import { RefObject, useEffect, useRef, useState } from "react";
+import { RefObject, useRef } from "react";
 import { useWsStore } from "../store/useWsStore";
 import { deleteNoteInDB, updateNoteToDB } from "../util/noteActions";
 import { KonvaEventObject } from "konva/lib/Node";
 import Konva from "konva";
 import { useNoteLockStore } from "../store/useNoteLockStore";
-import { Jersey_20 } from "next/font/google";
+import { Inter } from "next/font/google";
 import { usePresenceStore } from "../store/usePresenceStore";
 
 interface Props {
@@ -18,14 +17,12 @@ interface Props {
   userId: string;
 }
 
+const inter = Inter({ weight: "400", subsets: ["latin"] })
+
 const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick, userId }: Props) => {
-  const updateNote = useNoteStore((n) => n.updateNote)
-  const deleteNode = useNoteStore((n) => n.deleteNote)
   const ws = useWsStore(ws => ws.ws)
   const lastSentRef = useRef(0)
   const holdTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
-  const [isHolding, setIsHolding] = useState(false)
-  const lockedNotes = useNoteLockStore(n => n.lockedNotes)
   const lock = useNoteLockStore(n => n.lock)
   const unlock = useNoteLockStore(n => n.unlock)
 
@@ -97,6 +94,7 @@ const NoteShape = ({ noteData, onTransformEnd, nodeMap, onHoldClick, userId }: P
           strokeWidth={editorId ? (editorId === userId ? 0 : borderWidth) : 0}
         />
         <Text
+          className={inter.className}
           id={noteData.id}
           name="note"
           x={noteData.font_size / 2}

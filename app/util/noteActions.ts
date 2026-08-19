@@ -61,8 +61,8 @@ export async function addNewNote(roomId: string | null = null, isUndoRedo: boole
   const id = crypto.randomUUID()
   const newNote: Note = {
     id: id,
-    x: 50, y: 50,
-    width: 150, height: 150,
+    x: 100, y: 100,
+    width: 250, height: 250,
     text: "new note",
     room_id: roomId,
     scale_x: 1,

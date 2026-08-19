@@ -44,17 +44,24 @@ export default function Board({ roomId }: Props) {
   return (
     <>
       <div className="fixed top-0 inset-x-0 z-10 flex-row gap-20">
-        <div className="grid grid-cols-3 items-center px-4 py-2 bg-purple-100">
-          <div className="justify-self-start"></div>
-          <div className="justify-self-center flex items-center gap-2">
-            <AddItemBox
-              buttonOnClick={() => addNewNote(roomId)}
-            />
-            {roomId && InvitePopup({ roomId })}
+        <div className="grid grid-cols-3 items-center px-6 py-3">
+          <div className="justify-self-start">
+            {/* board name / logo slot */}
           </div>
-          <div className="justify-self-end">
-            <Button onClick={() => router.push("/files")}>Go to files</Button>
-            <LogoutButton></LogoutButton>
+
+          <div className="justify-self-center">
+            <div className="flex items-center gap-1 bg-white rounded-full shadow-md border border-gray-200 px-2 py-1.5">
+              <AddItemBox buttonOnClick={() => addNewNote(roomId)} />
+              <div className="w-px h-5 bg-gray-200 mx-1" />
+              {roomId && InvitePopup({ roomId })}
+            </div>
+          </div>
+
+          <div className="justify-self-end flex items-center gap-2">
+            <Button onClick={() => router.push("/files")}>
+              Files
+            </Button>
+            <LogoutButton />
           </div>
         </div>
 
